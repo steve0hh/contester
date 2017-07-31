@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title></title>
+    <script src="js/csv.min.js"></script>
+  </head>
+  <body>
+    <script>
+      window.fbAsyncInit = function() {
+        FB.init({
+          appId      : '2095981140650827',
+          xfbml      : true,
+          version    : 'v2.10'
+        });
+        FB.AppEvents.logPageView();
+      };
+
+      (function(d, s, id){
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) {return;}
+        js = d.createElement(s); js.id = id;
+        js.src = "//connect.facebook.net/en_US/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+      }(document, 'script', 'facebook-jssdk'));
+    </script>
+
+    <button onclick="doLogin()">login</button>
+    <button onclick="getPageId()">getinfo</button>
+
+    <script type="text/javascript" charset="utf-8">
+      function doLogin(){
+        FB.login(function(response) {
+          if (response.authResponse) {
+            console.log('Welcome!  Fetching your information.... ');
+          } else {
+            console.log('User cancelled login or did not fully authorize.');
+          }
+        });
+      }
+
+
+      function getPageId(callback){
+        var url = "https://www.facebook.com/sgpanasonic/posts/1474540742568655";
+        var url_parts = url.split("/");
+        var pageName = url_parts[3];
+        var postId = url_parts[url_parts.length - 1];
+
+        FB.api(
+            '/' +pageName,
+            function(response) {
+              var pageId = response.id;
+              console.log(pageId);
+              console.log(postId);
+              callback(pageId, postId);
+            }
+        );
+      }
+
+      function getComment(pageId, postId){
+        var comments = []
+        FB.api(
+            "/"+ pageId +"_"+ postId +"/comments",
+            'GET',
+            {"limit":"1000"},
+            function parse(response) {
+              if (response && !response.error) {
+                /* handle the result */
+                comments = comments.concat(response.data)
+                console.log(comments)
+                if (!response.paging.next) {
+                  csv = CSV.encode(comments);
+                  uriContent = "data:application/octet-stream," + encodeURIComponent(csv);
+                  var element = document.createElement('a');
+                  element.setAttribute('href', uriContent);
+                  element.setAttribute('download', 'comments.csv');
+                  element.style.display = 'none';
+                  document.body.appendChild(element);
+                  element.click();
+                  document.body.removeChild(element);
+                  return
+                }
+
+                FB.api(response.paging.next, parse);
+              }else{
+                console.log("failed")
+              }
+            }
+            );
+      }
+
+      function getInfo(pageId, postId){
+        var likes = []
+        FB.api(
+            "/"+ pageId +"_"+ postId +"/likes",
+            'GET',
+            {"limit":"1000"},
+            function parse(response) {
+              if (response && !response.error) {
+                /* handle the result */
+                likes = likes.concat(response.data)
+                console.log(likes)
+                if (!response.paging.next) {
+                  csv = CSV.encode(likes);
+                  uriContent = "data:application/octet-stream," + encodeURIComponent(csv);
+                  var element = document.createElement('a');
+                  element.setAttribute('href', uriContent);
+                  element.setAttribute('download', 'likes.csv');
+                  element.style.display = 'none';
+                  document.body.appendChild(element);
+                  element.click();
+                  document.body.removeChild(element);
+                  return
+                }
+
+                FB.api(response.paging.next, parse);
+              }else{
+                console.log("failed")
+              }
+            }
+            );
+      }
+    </script>
+
+  </body>
+</html>
