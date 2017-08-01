@@ -1,3 +1,4 @@
+// https://contester.surge.sh/
 var app = new Vue({
   el: '#contester',
   data: {
@@ -15,47 +16,52 @@ var app = new Vue({
       });
     },
     downloadLikes: function(){
-      if (this.validateUrl()) doRequest(this.url, getLikes);
-      else alert("Sorry, there's a problem with the supplied URL")
+      doRequest(this.url, getLikes);
     },
     downloadComments: function(){
-      if (this.validateUrl()) doRequest(this.url, getComments);
-      else alert("Sorry, there's a problem with the supplied URL")
-    },
-    validateUrl: function() {
-      var url = this.url
-      var url_parts = url.split("/")
-      if (url_parts.length != 6) {
-        return false
-      }
-      return true
+      doRequest(this.url, getComments);
     }
   }
 });
 
+// validates, gets the object id, then runs the callback
+// function with objectid supplied
 function doRequest(url, callback){
-  var url_parts = url.split("/");
-  var pageName = url_parts[3];
-  var postId = url_parts[url_parts.length - 1];
+  console.log("Ensure that you have done Step 1.");
+  var postRegex = /https:\/\/www\.facebook\.com\/([^\/]*)\/posts\/([0-9]*)/
+  var videoPhotoRegex = /https:\/\/www\.facebook\.com\/.*\/([0-9]+)\/.*/
 
-  // get the facebook id first
-  FB.api(
-    '/' +pageName,
-    function(response) {
-      var pageId = response.id;
-      console.log(pageId);
-      console.log(postId);
-      // run the callback function
-      callback(pageId, postId);
-    }
-  );
-}
+  var postRegexMatch = url.match(postRegex)
+  var videoPhotoRegexMatch = url.match(videoPhotoRegex)
+  console.log(videoPhotoRegexMatch)
+  // match regex, validation stage
+  if (postRegexMatch != null){
+    var pageName = postRegexMatch[1];
+    var postId = postRegexMatch[2];
+    FB.api(
+      '/' +pageName,
+      function(response) {
+        var pageId = response.id;
+        var objectId = pageId + "_" + postId;
+        console.log(objectId);
+        // run the callback function
+        callback(objectId);
+      }); // close fb.api
+  }else if (videoPhotoRegexMatch != null){
+    var objectId = videoPhotoRegexMatch[1];
+    console.log(objectId)
+    callback(objectId);
+  } else {
+    // doesn't match any of the above regex
+    alert("Sorry, there's a problem with the supplied URL")
+  } // close else
 
+} // close doRequest
 
-function getComments(pageId, postId){
+function getComments(objectId){
   var comments = []
   FB.api(
-    "/"+ pageId +"_"+ postId +"/comments",
+    "/"+ objectId +"/comments",
     'GET',
     {"limit":"1000"},
     function parse(response) {
@@ -63,7 +69,7 @@ function getComments(pageId, postId){
         /* handle the result */
         comments = comments.concat(response.data)
         console.log(comments)
-        if (!response.paging.next) {
+        if (typeof response.paging == "undefined" || typeof response.paging.next == "undefined") {
           csv = CSV.encode(comments);
           uriContent = "data:application/octet-stream," + encodeURIComponent(csv);
           var element = document.createElement('a');
@@ -75,7 +81,6 @@ function getComments(pageId, postId){
           document.body.removeChild(element);
           return
         }
-
         FB.api(response.paging.next, parse);
       }else{
         console.log("failed")
@@ -84,10 +89,10 @@ function getComments(pageId, postId){
   );
 }
 
-function getLikes(pageId, postId){
+function getLikes(objectId){
   var likes = []
   FB.api(
-    "/"+ pageId +"_"+ postId +"/likes",
+    "/"+ objectId +"/likes",
     'GET',
     {"limit":"1000"},
     function parse(response) {
@@ -95,7 +100,7 @@ function getLikes(pageId, postId){
         /* handle the result */
         likes = likes.concat(response.data)
         console.log(likes)
-        if (!response.paging.next) {
+        if (typeof response.paging == "undefined" || typeof response.paging.next == "undefined") {
           csv = CSV.encode(likes);
           uriContent = "data:application/octet-stream," + encodeURIComponent(csv);
           var element = document.createElement('a');

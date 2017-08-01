@@ -32,7 +32,13 @@
             <div class="form-group">
               <label for="url">Facebook post url: </label>
               <input v-model="url" placeholder= "Your facebook url here" class="form-control">
-              <p class="help-block">Your url should look like `https://www.facebook.com/PAGE_NAME/posts/PAGE_ID`</p>
+              <p class="help-block">Your url should look like:
+                <ul>
+                  <li>https://www.facebook.com/PAGE_NAME/posts/PAGE_ID</li>
+                  <li>https://www.facebook.com/PAGE_NAME/videos/VIDEO_ID</li>
+                  <li>https://www.facebook.com/PAGE_NAME/photos/some_random_alpha_numeric_stuff/PHOTO_ID/some_random_query_string</li>
+                </ul>
+              </p>
             </div>
           </div>
         </div>
