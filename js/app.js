@@ -3,7 +3,8 @@ var app = new Vue({
   el: '#contester',
   data: {
     url: '',
-    error: false
+    progress: 0,
+    progress_message: ""
   },
   methods: {
     loginFacebook: function(){
@@ -63,13 +64,20 @@ function getComments(objectId){
   FB.api(
     "/"+ objectId +"/comments",
     'GET',
-    {"limit":"1000"},
+    {"limit":"1000", "summary": "true"},
     function parse(response) {
       if (response && !response.error) {
         /* handle the result */
         comments = comments.concat(response.data)
-        console.log(comments)
+        console.log(comments.length)
+
+        app.progress = Math.round((comments.length/response.summary.total_count) * 100);
+        app.progress_message = app.progress + " %";
+
         if (typeof response.paging == "undefined" || typeof response.paging.next == "undefined") {
+
+          app.progress_message = "Generating CSV file";
+
           csv = CSV.encode(comments);
           uriContent = "data:application/octet-stream," + encodeURIComponent(csv);
           var element = document.createElement('a');
@@ -79,6 +87,7 @@ function getComments(objectId){
           document.body.appendChild(element);
           element.click();
           document.body.removeChild(element);
+          app.progress = 0;
           return
         }
         FB.api(response.paging.next, parse);
@@ -94,13 +103,18 @@ function getLikes(objectId){
   FB.api(
     "/"+ objectId +"/likes",
     'GET',
-    {"limit":"1000"},
+    {"limit":"1000", "summary": "true"},
     function parse(response) {
       if (response && !response.error) {
         /* handle the result */
         likes = likes.concat(response.data)
-        console.log(likes)
+        console.log(likes.length)
+
+        app.progress = Math.round((likes.length/response.summary.total_count) * 100);
+        app.progress_message = app.progress + " %";
+
         if (typeof response.paging == "undefined" || typeof response.paging.next == "undefined") {
+          app.progress_message = "Generating CSV file";
           csv = CSV.encode(likes);
           uriContent = "data:application/octet-stream," + encodeURIComponent(csv);
           var element = document.createElement('a');
@@ -110,6 +124,7 @@ function getLikes(objectId){
           document.body.appendChild(element);
           element.click();
           document.body.removeChild(element);
+          app.progress = 0;
           return
         }
 

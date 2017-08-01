@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
     <script src="js/csv.min.js"></script>
-    <script src="https://unpkg.com/vue"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.4.0/vue.min.js"></script>
   </head>
   <body>
 
@@ -46,11 +46,20 @@
         <div class="panel panel-default">
           <div class="panel-heading">Step 3:</div>
           <div class="panel-body">
-            <button v-on:click="downloadLikes()" class="btn btn-default">Download likes data</button>
+
+            <div class="progress" v-if="progress">
+              <div class="progress-bar" role="progressbar" v-bind:aria-valuenow="progress" aria-valuemin="0" aria-valuemax="100" v-bind:style="{ width: progress + '%' }">
+                {{ progress_message }}
+              </div>
+            </div>
+
+            <button v-on:click="downloadLikes()" class="btn btn-default" v-bind:disabled="progress != 0">Download likes data</button>
             OR
-            <button v-on:click="downloadComments()" class="btn btn-default">Download comments data</button>
+            <button v-on:click="downloadComments()" class="btn btn-default" v-bind:disabled="progress != 0">Download comments data</button>
+
           </div>
         </div>
+
       </div>
     </div>
 
