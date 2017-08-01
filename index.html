@@ -3,125 +3,52 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
-    <title></title>
+    <title>Contester</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
     <script src="js/csv.min.js"></script>
+    <script src="https://unpkg.com/vue"></script>
   </head>
   <body>
-    <script>
-      window.fbAsyncInit = function() {
-        FB.init({
-          appId      : '2095981140650827',
-          xfbml      : true,
-          version    : 'v2.10'
-        });
-        FB.AppEvents.logPageView();
-      };
 
-      (function(d, s, id){
-        var js, fjs = d.getElementsByTagName(s)[0];
-        if (d.getElementById(id)) {return;}
-        js = d.createElement(s); js.id = id;
-        js.src = "//connect.facebook.net/en_US/sdk.js";
-        fjs.parentNode.insertBefore(js, fjs);
-      }(document, 'script', 'facebook-jssdk'));
-    </script>
+    <div class="container">
+      <div class="jumbotron">
+        <h1>Hello, welcome to the contester</h1>
+        <p>Please follow the following steps in order to download all the information</p>
+      </div>
 
-    <button onclick="doLogin()">login</button>
-    <button onclick="getPageId()">getinfo</button>
+      <div id="contester">
+        <div class="panel panel-default">
+          <div class="panel-heading">Step 1:</div>
+          <div class="panel-body">
+            <button v-on:click="loginFacebook()" class="btn btn-default">Grant access to facebook</button>
+            <p class="help-block">Don't worry, we won't do anything funny with it</p>
+          </div>
+        </div>
 
-    <script type="text/javascript" charset="utf-8">
-      function doLogin(){
-        FB.login(function(response) {
-          if (response.authResponse) {
-            console.log('Welcome!  Fetching your information.... ');
-          } else {
-            console.log('User cancelled login or did not fully authorize.');
-          }
-        });
-      }
+        <div class="panel panel-default">
+          <div class="panel-heading">Step 2:</div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label for="url">Facebook post url: </label>
+              <input v-model="url" placeholder= "Your facebook url here" class="form-control">
+              <p class="help-block">Your url should look like `https://www.facebook.com/PAGE_NAME/posts/PAGE_ID`</p>
+            </div>
+          </div>
+        </div>
 
+        <div class="panel panel-default">
+          <div class="panel-heading">Step 3:</div>
+          <div class="panel-body">
+            <button v-on:click="downloadLikes()" class="btn btn-default">Download likes data</button>
+            OR
+            <button v-on:click="downloadComments()" class="btn btn-default">Download comments data</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-      function getPageId(callback){
-        var url = "https://www.facebook.com/sgpanasonic/posts/1474540742568655";
-        var url_parts = url.split("/");
-        var pageName = url_parts[3];
-        var postId = url_parts[url_parts.length - 1];
-
-        FB.api(
-            '/' +pageName,
-            function(response) {
-              var pageId = response.id;
-              console.log(pageId);
-              console.log(postId);
-              callback(pageId, postId);
-            }
-        );
-      }
-
-      function getComment(pageId, postId){
-        var comments = []
-        FB.api(
-            "/"+ pageId +"_"+ postId +"/comments",
-            'GET',
-            {"limit":"1000"},
-            function parse(response) {
-              if (response && !response.error) {
-                /* handle the result */
-                comments = comments.concat(response.data)
-                console.log(comments)
-                if (!response.paging.next) {
-                  csv = CSV.encode(comments);
-                  uriContent = "data:application/octet-stream," + encodeURIComponent(csv);
-                  var element = document.createElement('a');
-                  element.setAttribute('href', uriContent);
-                  element.setAttribute('download', 'comments.csv');
-                  element.style.display = 'none';
-                  document.body.appendChild(element);
-                  element.click();
-                  document.body.removeChild(element);
-                  return
-                }
-
-                FB.api(response.paging.next, parse);
-              }else{
-                console.log("failed")
-              }
-            }
-            );
-      }
-
-      function getInfo(pageId, postId){
-        var likes = []
-        FB.api(
-            "/"+ pageId +"_"+ postId +"/likes",
-            'GET',
-            {"limit":"1000"},
-            function parse(response) {
-              if (response && !response.error) {
-                /* handle the result */
-                likes = likes.concat(response.data)
-                console.log(likes)
-                if (!response.paging.next) {
-                  csv = CSV.encode(likes);
-                  uriContent = "data:application/octet-stream," + encodeURIComponent(csv);
-                  var element = document.createElement('a');
-                  element.setAttribute('href', uriContent);
-                  element.setAttribute('download', 'likes.csv');
-                  element.style.display = 'none';
-                  document.body.appendChild(element);
-                  element.click();
-                  document.body.removeChild(element);
-                  return
-                }
-
-                FB.api(response.paging.next, parse);
-              }else{
-                console.log("failed")
-              }
-            }
-            );
-      }
-    </script>
-
+    <script src="js/app.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/facebook.js" type="text/javascript" charset="utf-8"></script>
   </body>
 </html>
