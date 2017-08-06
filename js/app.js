@@ -29,6 +29,8 @@ var app = new Vue({
 // function with objectid supplied
 function doRequest(url, callback){
   console.log("Ensure that you have done Step 1.");
+  app.progress = 1;
+  app.progress_message = 1 + "%";
   var postRegex = /https:\/\/www\.facebook\.com\/([^\/]*)\/posts\/([0-9]*)/
   var videoPhotoRegex = /https:\/\/www\.facebook\.com\/.*\/([0-9]+)\/.*/
 
@@ -55,6 +57,7 @@ function doRequest(url, callback){
   } else {
     // doesn't match any of the above regex
     alert("Sorry, there's a problem with the supplied URL")
+    app.progress = 0;
   } // close else
 
 } // close doRequest
